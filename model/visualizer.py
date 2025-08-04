@@ -5,6 +5,7 @@ from typing import Dict, Optional
 import numpy as np
 import matplotlib.pyplot as plt
 from .logistic_equation import LogisticEquation
+from config.prediction_settings import PredictionSettings
 
 # 日本語フォントの設定 (macOS標準のヒラギノ角ゴシック)
 plt.rcParams['font.family'] = 'Hiragino Sans'
@@ -16,7 +17,7 @@ class FittingVisualizer:
     パラメータフィッティング結果を可視化するクラス
     """
     
-    def __init__(self, prediction_settings=None):
+    def __init__(self, prediction_settings: Optional[PredictionSettings] = None):
         """
         FittingVisualizer の初期化
         
@@ -105,7 +106,7 @@ class ForecastVisualizer:
     将来予測結果を可視化するクラス
     """
     
-    def __init__(self, prediction_settings):
+    def __init__(self, prediction_settings: PredictionSettings):
         """
         ForecastVisualizer の初期化
         
