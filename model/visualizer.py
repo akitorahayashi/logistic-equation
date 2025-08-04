@@ -16,10 +16,14 @@ class FittingVisualizer:
     パラメータフィッティング結果を可視化するクラス
     """
     
-    def __init__(self):
+    def __init__(self, prediction_settings=None):
         """
         FittingVisualizer の初期化
+        
+        Args:
+            prediction_settings: PredictionSettingsインスタンス（オプション）
         """
+        self.prediction_settings = prediction_settings
         self.figure_size = (10, 6)
         self.dpi = 100
     
@@ -36,8 +40,8 @@ class FittingVisualizer:
     
     def plot_with_equation(
         self, 
-        t_actual: np.ndarray, 
-        P_actual: np.ndarray, 
+        time_array: np.ndarray, 
+        value_array: np.ndarray, 
         equation: LogisticEquation, 
         output_path: str,
         title: str = "実データとロジスティック方程式の比較"
@@ -46,8 +50,8 @@ class FittingVisualizer:
         フィッティング済み方程式を使用してプロット
         
         Args:
-            t_actual (np.ndarray): 実績データの時刻
-            P_actual (np.ndarray): 実績データの人口値
+            time_array (np.ndarray): 実績データの時刻
+            value_array (np.ndarray): 実績データの値
             equation (LogisticEquation): フィッティング済みの方程式
             output_path (str): 出力画像のファイルパス
             title (str): グラフのタイトル
@@ -58,12 +62,12 @@ class FittingVisualizer:
         if equation.gamma is None or equation.K is None:
             raise ValueError("方程式のパラメータが設定されていません。")
         
-        P0: float = P_actual[0]
-        t_model, P_model = equation.solve_runge_kutta(P0, t_actual[0], t_actual[-1], 1.0)
+        P0: float = value_array[0]
+        time_model, value_model = equation.solve_runge_kutta(P0, time_array[0], time_array[-1], 1.0)
         
         plt.figure(figsize=self.figure_size, dpi=self.dpi)
-        plt.plot(t_actual, P_actual, 'o', label='実データ')
-        plt.plot(t_model, P_model, '-', 
+        plt.plot(time_array, value_array, 'o', label='実データ')
+        plt.plot(time_model, value_model, '-', 
                 label=f'ロジスティック方程式 (γ={equation.gamma:.4f}, K={equation.K})')
         plt.title(title)
         plt.xlabel('時間')
@@ -76,8 +80,8 @@ class FittingVisualizer:
     
     def plot_with_parameters(
         self, 
-        t_actual: np.ndarray, 
-        P_actual: np.ndarray, 
+        time_array: np.ndarray, 
+        value_array: np.ndarray, 
         best_params: Dict[str, float], 
         output_path: str,
         title: str = "実データとロジスティック方程式の比較"
@@ -86,15 +90,14 @@ class FittingVisualizer:
         パラメータ辞書を使用してプロット
         
         Args:
-            t_actual (np.ndarray): 実績データの時刻
-            P_actual (np.ndarray): 実績データの人口値
+            time_array (np.ndarray): 実績データの時刻
+            value_array (np.ndarray): 実績データの値
             best_params (Dict[str, float]): 最適化されたパラメータ {"gamma": float, "K": float}
             output_path (str): 出力画像のファイルパス
             title (str): グラフのタイトル
         """
-        equation = LogisticEquation()
-        equation.set_parameters(best_params["gamma"], best_params["K"])
-        self.plot_with_equation(t_actual, P_actual, equation, output_path, title)
+        equation = LogisticEquation(best_params["gamma"], best_params["K"])
+        self.plot_with_equation(time_array, value_array, equation, output_path, title)
 
 
 class ForecastVisualizer:
@@ -102,10 +105,14 @@ class ForecastVisualizer:
     将来予測結果を可視化するクラス
     """
     
-    def __init__(self):
+    def __init__(self, prediction_settings):
         """
         ForecastVisualizer の初期化
+        
+        Args:
+            prediction_settings: PredictionSettingsインスタンス（必須）
         """
+        self.prediction_settings = prediction_settings
         self.figure_size = (12, 7)
         self.dpi = 100
     
@@ -122,46 +129,46 @@ class ForecastVisualizer:
     
     def plot_forecast(
         self, 
-        t_actual: np.ndarray, 
-        P_actual: np.ndarray, 
-        t_forecast: np.ndarray, 
-        P_forecast: np.ndarray, 
+        time_array: np.ndarray, 
+        value_array: np.ndarray, 
+        forecast_time_array: np.ndarray, 
+        forecast_value_array: np.ndarray, 
         output_path: str, 
-        start_year: int = 1950,
-        title: str = "ロジスティック方程式による人口推移と将来予測"
+        title: str = "ロジスティック方程式による時系列データと将来予測"
     ) -> None:
         """
         将来予測結果をプロット
         
         Args:
-            t_actual (np.ndarray): 実績データの期間
-            P_actual (np.ndarray): 実績データの値
-            t_forecast (np.ndarray): 予測時刻の配列
-            P_forecast (np.ndarray): 予測値の配列
+            time_array (np.ndarray): 実績データの期間
+            value_array (np.ndarray): 実績データの値
+            forecast_time_array (np.ndarray): 予測時刻の配列
+            forecast_value_array (np.ndarray): 予測値の配列
             output_path (str): 出力画像のファイルパス
-            start_year (int): プロットのx軸の開始年
             title (str): グラフのタイトル
         """
         plt.figure(figsize=self.figure_size, dpi=self.dpi)
 
-        # 実績データのプロット (x軸を開始年で調整)
-        actual_years: np.ndarray = t_actual + start_year
-        plt.plot(actual_years, P_actual, 'o', 
-                label=f'実際の人口データ ({actual_years[0]}-{actual_years[-1]}年)', 
+        # 実績データの表示用時間軸を計算（年固定）
+        actual_display_time = time_array + self.prediction_settings.start_year
+        forecast_display_time = forecast_time_array + self.prediction_settings.start_year
+
+        # 実績データのプロット
+        plt.plot(actual_display_time, value_array, 'o', 
+                label=f'実際のデータ ({actual_display_time[0]:.0f}-{actual_display_time[-1]:.0f}年)', 
                 markersize=8, zorder=10)
 
         # 予測結果のプロット
-        forecast_years: np.ndarray = t_forecast + start_year
-        plt.plot(forecast_years, P_forecast, '-', 
-                label=f'ロジスティック方程式による将来予測 ({int(forecast_years[-1])}年まで)')
+        plt.plot(forecast_display_time, forecast_value_array, '-', 
+                label=f'ロジスティック方程式による将来予測 ({forecast_display_time[-1]:.0f}年まで)')
 
         plt.title(title)
         plt.xlabel('年')
-        plt.ylabel('人口（千人）')
+        plt.ylabel('値')
         
         # 予測開始時点に垂直線を追加
-        plt.axvline(x=actual_years[-1], color='gray', linestyle='--', 
-                   label=f'予測開始 ({actual_years[-1]}年)')
+        plt.axvline(x=actual_display_time[-1], color='gray', linestyle='--', 
+                   label=f'予測開始 ({actual_display_time[-1]:.0f}年)')
         
         plt.legend()
         plt.grid(True)

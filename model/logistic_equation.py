@@ -16,13 +16,13 @@ class LogisticEquation:
         K (float): 環境収容力
     """
     
-    def __init__(self, gamma: Optional[float] = None, K: Optional[float] = None):
+    def __init__(self, gamma: float, K: float):
         """
         ロジスティック方程式の初期化
         
         Args:
-            gamma (Optional[float]): 成長率
-            K (Optional[float]): 環境収容力
+            gamma (float): 成長率
+            K (float): 環境収容力
         """
         self.gamma = gamma
         self.K = K

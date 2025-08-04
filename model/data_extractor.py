@@ -13,15 +13,53 @@ class DataExtractor:
     Excelファイルからデータを抽出するクラス
     """
     
-    def __init__(self):
+    def __init__(self, file_path: str):
         """
         DataExtractor の初期化
+        
+        Args:
+            file_path: 抽出するExcelファイルのパス
         """
+        self.file_path = file_path
         self.time_data: np.ndarray = None
         self.value_data: np.ndarray = None
-        self.file_path: str = None
     
-    def extract_from_directory(self, input_dir: str) -> Tuple[np.ndarray, np.ndarray]:
+    def extract_data(self) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        指定されたExcelファイルからデータを抽出
+        
+        Returns:
+            Tuple[np.ndarray, np.ndarray]: (時間データの配列, 値データの配列)
+        
+        Raises:
+            FileNotFoundError: ファイルが見つからない場合
+            ValueError: データ形式が不正な場合
+        """
+        try:
+            df: pd.DataFrame = pd.read_excel(self.file_path, header=0, engine="openpyxl")
+            
+            # 列名の確認
+            expected_columns = ['time', 'value']
+            if list(df.columns[:2]) != expected_columns:
+                raise ValueError(f"1行目は 'time', 'value' という列名である必要があります。現在: {list(df.columns[:2])}")
+            
+            # データ型の確認
+            if not (np.issubdtype(df['time'].dtype, np.number) and np.issubdtype(df['value'].dtype, np.number)):
+                raise ValueError("'time'列と'value'列は数値データである必要があります")
+            
+            # データの保存
+            self.time_data = df['time'].values
+            self.value_data = df['value'].values
+            
+            return self.time_data, self.value_data
+            
+        except FileNotFoundError:
+            raise FileNotFoundError(f"入力ファイルが見つかりません: {self.file_path}")
+        except Exception as e:
+            raise Exception(f"データ抽出エラー: {e}")
+    
+    @staticmethod
+    def extract_from_directory(input_dir: str) -> Tuple[np.ndarray, np.ndarray]:
         """
         inputディレクトリからExcelファイル（.xlsx）を1つだけ特定し、データを抽出
         
@@ -42,45 +80,9 @@ class DataExtractor:
         excel_filename: str = xlsx_files[0]
         excel_path: str = os.path.join(input_dir, excel_filename)
         
-        return self.extract_from_file(excel_path)
-    
-    def extract_from_file(self, file_path: str) -> Tuple[np.ndarray, np.ndarray]:
-        """
-        指定されたExcelファイルからデータを抽出
-        
-        Args:
-            file_path (str): Excelファイルのパス
-        
-        Returns:
-            Tuple[np.ndarray, np.ndarray]: (時間データの配列, 値データの配列)
-        
-        Raises:
-            FileNotFoundError: ファイルが見つからない場合
-            ValueError: データ形式が不正な場合
-        """
-        try:
-            df: pd.DataFrame = pd.read_excel(file_path, header=0, engine="openpyxl")
-            
-            # 列名の確認
-            expected_columns = ['time', 'value']
-            if list(df.columns[:2]) != expected_columns:
-                raise ValueError(f"1行目は 'time', 'value' という列名である必要があります。現在: {list(df.columns[:2])}")
-            
-            # データ型の確認
-            if not (np.issubdtype(df['time'].dtype, np.number) and np.issubdtype(df['value'].dtype, np.number)):
-                raise ValueError("'time'列と'value'列は数値データである必要があります")
-            
-            # データの保存
-            self.time_data = df['time'].values
-            self.value_data = df['value'].values
-            self.file_path = file_path
-            
-            return self.time_data, self.value_data
-            
-        except FileNotFoundError:
-            raise FileNotFoundError(f"入力ファイルが見つかりません: {file_path}")
-        except Exception as e:
-            raise Exception(f"データ抽出エラー: {e}")
+        # DataExtractorのインスタンスを作成してデータを抽出
+        extractor = DataExtractor(excel_path)
+        return extractor.extract_data()
     
     def get_data(self) -> Tuple[np.ndarray, np.ndarray]:
         """

@@ -13,62 +13,26 @@ class ParameterFitter:
     ロジスティック方程式のパラメータフィッティングを行うクラス
     """
     
-    def __init__(self):
+    def __init__(self, model_params, time_data: np.ndarray, value_data: np.ndarray):
         """
         ParameterFitter の初期化
+        
+        Args:
+            model_params: ModelParametersインスタンス
+            time_data: 時刻データ
+            value_data: 値データ
         """
-        self.equation = LogisticEquation()
-        self.time_data: np.ndarray = None
-        self.value_data: np.ndarray = None
+        self.equation = LogisticEquation(0.01, 1000000)  # ダミー値で初期化
+        self.model_params = model_params
+        self.time_data = time_data
+        self.value_data = value_data
         self.best_params: Dict[str, float] = None
         self.min_sse: float = None
-    
-    def load_data_from_excel(self, xlsx_path: str, header: int = 0) -> None:
-        """
-        xlsxファイルからtime, value列を読み込む
-        
-        Args:
-            xlsx_path (str): Excelファイルのパス
-            header (int): ヘッダー行の番号
-        
-        Raises:
-            FileNotFoundError: ファイルが見つからない場合
-            ValueError: 必要な列が存在しない場合
-        """
-        try:
-            df = pd.read_excel(xlsx_path, header=header)
-            if "time" in df.columns and "value" in df.columns:
-                self.time_data = df["time"].values
-                self.value_data = df["value"].values
-            else:
-                raise ValueError("Excelファイルに 'time' および 'value' 列が必要です。")
-        except FileNotFoundError:
-            raise FileNotFoundError(f"'{xlsx_path}' が見つかりません。")
-        except Exception as e:
-            raise Exception(f"Excelファイルの読み込みエラー: {e}")
-    
-    def set_data(self, time_array: np.ndarray, value_array: np.ndarray) -> None:
-        """
-        データを直接設定
-        
-        Args:
-            time_array (np.ndarray): 時刻データ
-            value_array (np.ndarray): 値データ
-        """
-        self.time_data = time_array
-        self.value_data = value_array
-    
-    def fit_parameters(
-        self, 
-        K_range: np.ndarray, 
-        gamma_range: np.ndarray
-    ) -> Tuple[Dict[str, float], float]:
+
+    def fit_parameters(self) -> Tuple[Dict[str, float], float]:
         """
         残差平方和(SSE)を最小化してパラメータをフィッティング
-        
-        Args:
-            K_range (np.ndarray): 環境収容力Kの探索範囲
-            gamma_range (np.ndarray): 成長率γの探索範囲
+        設定から探索範囲を取得して使用する
         
         Returns:
             Tuple[Dict[str, float], float]: (最適パラメータ辞書, 最小SSE値)
@@ -77,7 +41,11 @@ class ParameterFitter:
             ValueError: データが設定されていない場合
         """
         if self.time_data is None or self.value_data is None:
-            raise ValueError("データが設定されていません。先にload_data_from_excel()またはset_data()を呼び出してください。")
+            raise ValueError("データが設定されていません。")
+        
+        # 設定から探索範囲を取得
+        K_range = self.model_params.get_k_range()
+        gamma_range = self.model_params.get_gamma_range()
         
         P0: float = self.value_data[0]
         best_params: Dict[str, float] = {"gamma": 0.0, "K": 0.0}
