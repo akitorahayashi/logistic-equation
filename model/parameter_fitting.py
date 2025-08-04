@@ -47,21 +47,21 @@ class ParameterFitter:
         K_range = self.model_params.get_k_range()
         gamma_range = self.model_params.get_gamma_range()
         
-        P0: float = self.value_data[0]
+        v0: float = self.value_data[0]
         best_params: Dict[str, float] = {"gamma": 0.0, "K": 0.0}
         min_sse: float = np.inf
 
         for K in K_range:
             for gamma in gamma_range:
                 # 一時的にパラメータを設定
-                self.equation.set_parameters(gamma, K)
-                t_model, P_model = self.equation.solve_runge_kutta(
-                    P0, self.time_data[0], self.time_data[-1], 1.0
+                equation = LogisticEquation(gamma, K)
+                t_model, v_model = equation.solve_runge_kutta(
+                    v0, self.time_data[0], self.time_data[-1], 1.0
                 )
                 
                 # SSE計算のために、実績データ点に対応するモデル上の値を内挿
-                model_P_at_actual_t: np.ndarray = np.interp(self.time_data, t_model, P_model)
-                sse: float = np.sum((self.value_data - model_P_at_actual_t)**2)
+                model_v_at_actual_t: np.ndarray = np.interp(self.time_data, t_model, v_model)
+                sse: float = np.sum((self.value_data - model_v_at_actual_t)**2)
                 
                 if sse < min_sse:
                     min_sse = sse
@@ -71,7 +71,7 @@ class ParameterFitter:
         self.best_params = best_params
         self.min_sse = min_sse
         # 最適パラメータを方程式に設定
-        self.equation.set_parameters(best_params["gamma"], best_params["K"])
+        self.equation = LogisticEquation(best_params["gamma"], best_params["K"])
         
         return best_params, min_sse
     

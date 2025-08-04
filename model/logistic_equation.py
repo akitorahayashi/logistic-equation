@@ -9,7 +9,7 @@ class LogisticEquation:
     """
     ロジスティック方程式のクラス
     
-    dP/dt = gamma * P * (1 - P/K)
+    dV/dt = gamma * V * (1 - V/K)
     
     Attributes:
         gamma (float): 成長率
@@ -27,38 +27,27 @@ class LogisticEquation:
         self.gamma = gamma
         self.K = K
     
-    def set_parameters(self, gamma: float, K: float) -> None:
+    def differential_equation(self, t: float, v: float) -> float:
         """
-        方程式のパラメータを設定
-        
-        Args:
-            gamma (float): 成長率
-            K (float): 環境収容力
-        """
-        self.gamma = gamma
-        self.K = K
-    
-    def differential_equation(self, t: float, P: float) -> float:
-        """
-        ロジスティック方程式: dP/dt = gamma * P * (1 - P/K)
+        ロジスティック方程式: dV/dt = gamma * V * (1 - V/K)
         
         Args:
             t (float): 時間
-            P (float): 現在の人口
+            v (float): 現在の値
         
         Returns:
-            float: 人口の変化率 dP/dt
+            float: 値の変化率 dV/dt
         
         Raises:
             ValueError: パラメータが設定されていない場合
         """
         if self.gamma is None or self.K is None:
             raise ValueError("パラメータ gamma と K を先に設定してください")
-        return self.gamma * P * (1 - P / self.K)
+        return self.gamma * v * (1 - v / self.K)
     
     def solve_runge_kutta(
         self, 
-        P0: float, 
+        v0: float,
         t_start: float, 
         t_end: float, 
         dt: float = 0.1
@@ -67,13 +56,13 @@ class LogisticEquation:
         4次ルンゲ・クッタ法による数値積分
         
         Args:
-            P0 (float): 初期値
+            v0 (float): 初期値
             t_start (float): 開始時刻
             t_end (float): 終了時刻
             dt (float): 時間刻み
         
         Returns:
-            Tuple[np.ndarray, np.ndarray]: (時刻配列, 人口配列)
+            Tuple[np.ndarray, np.ndarray]: (時刻配列, 値の配列)
         
         Raises:
             ValueError: パラメータが設定されていない場合
@@ -83,14 +72,14 @@ class LogisticEquation:
         
         n_steps = int((t_end - t_start) / dt) + 1
         t = np.linspace(t_start, t_end, n_steps)
-        P = np.zeros(n_steps)
-        P[0] = P0
+        vs = np.zeros(n_steps)
+        vs[0] = v0
         
         for i in range(1, n_steps):
-            k1 = dt * self.differential_equation(t[i-1], P[i-1])
-            k2 = dt * self.differential_equation(t[i-1] + dt/2, P[i-1] + k1/2)
-            k3 = dt * self.differential_equation(t[i-1] + dt/2, P[i-1] + k2/2)
-            k4 = dt * self.differential_equation(t[i-1] + dt, P[i-1] + k3)
-            P[i] = P[i-1] + (k1 + 2*k2 + 2*k3 + k4) / 6
+            k1 = dt * self.differential_equation(t[i-1], vs[i-1])
+            k2 = dt * self.differential_equation(t[i-1] + dt/2, vs[i-1] + k1/2)
+            k3 = dt * self.differential_equation(t[i-1] + dt/2, vs[i-1] + k2/2)
+            k4 = dt * self.differential_equation(t[i-1] + dt, vs[i-1] + k3)
+            vs[i] = vs[i-1] + (k1 + 2*k2 + 2*k3 + k4) / 6
         
-        return t, P
+        return t, vs

@@ -23,25 +23,6 @@ class FuturePredictor:
         self.equation = equation
         self.prediction_settings = prediction_settings
     
-    def set_equation(self, equation: LogisticEquation) -> None:
-        """
-        予測に使用する方程式を設定
-        
-        Args:
-            equation (LogisticEquation): フィッティング済みの方程式
-        """
-        self.equation = equation
-    
-    def set_parameters(self, gamma: float, K: float) -> None:
-        """
-        方程式のパラメータを直接設定
-        
-        Args:
-            gamma (float): 成長率
-            K (float): 環境収容力
-        """
-        self.equation.set_parameters(gamma, K)
-    
     def predict(
         self, 
         time_array: np.ndarray, 
@@ -64,20 +45,20 @@ class FuturePredictor:
             ValueError: 方程式のパラメータが設定されていない場合
         """
         if self.equation.gamma is None or self.equation.K is None:
-            raise ValueError("方程式のパラメータが設定されていません。先にset_parameters()またはset_equation()を呼び出してください。")
+            raise ValueError("方程式のパラメータが設定されていません。")
         
         # 設定から予測終了時刻を取得
         forecast_end_t = self.prediction_settings.forecast_end_t
         
-        P0: float = value_array[0]
+        v0: float = value_array[0]
         t_start: float = time_array[0]
         
         # より細かい時間刻みで予測を実行
-        t_forecast, P_forecast = self.equation.solve_runge_kutta(
-            P0, t_start, forecast_end_t, dt
+        t_forecast, v_forecast = self.equation.solve_runge_kutta(
+            v0, t_start, forecast_end_t, dt
         )
         
-        return t_forecast, P_forecast
+        return t_forecast, v_forecast
     
     def predict_from_last_point(
         self, 
@@ -99,10 +80,10 @@ class FuturePredictor:
             Tuple[np.ndarray, np.ndarray]: (予測時刻配列, 予測値配列)
         """
         if self.equation.gamma is None or self.equation.K is None:
-            raise ValueError("方程式のパラメータが設定されていません。先にset_parameters()またはset_equation()を呼び出してください。")
+            raise ValueError("方程式のパラメータが設定されていません。")
         
-        t_forecast, P_forecast = self.equation.solve_runge_kutta(
+        t_forecast, v_forecast = self.equation.solve_runge_kutta(
             last_value, last_time, forecast_end_t, dt
         )
         
-        return t_forecast, P_forecast
+        return t_forecast, v_forecast

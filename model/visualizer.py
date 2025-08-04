@@ -63,8 +63,8 @@ class FittingVisualizer:
         if equation.gamma is None or equation.K is None:
             raise ValueError("方程式のパラメータが設定されていません。")
         
-        P0: float = value_array[0]
-        time_model, value_model = equation.solve_runge_kutta(P0, time_array[0], time_array[-1], 1.0)
+        v0: float = value_array[0]
+        time_model, value_model = equation.solve_runge_kutta(v0, time_array[0], time_array[-1], 1.0)
         
         plt.figure(figsize=self.figure_size, dpi=self.dpi)
         plt.plot(time_array, value_array, 'o', label='実データ')
