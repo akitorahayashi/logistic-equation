@@ -23,6 +23,14 @@ Excelファイルからデータを読み込み、最適なパラメータを自
   - `scikit-learn`
   - `yaspin`
 
+## 依存関係
+
+本プロジェクトは[Poetry](https://python-poetry.org/)によるライブラリの依存関係の管理を前提としています。
+
+```bash
+poetry install
+```
+
 ## ディレクトリ構成
 
 ```
@@ -43,14 +51,6 @@ Excelファイルからデータを読み込み、最適なパラメータを自
 ├── main.py
 ├── pyproject.toml
 └── README.md
-```
-
-## インストール
-
-本プロジェクトは[Poetry](https://python-poetry.org/)によるパッケージ管理を前提としています。
-
-```bash
-poetry install
 ```
 
 ## 使い方
