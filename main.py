@@ -6,7 +6,7 @@ import config.config as config
 from yaspin import yaspin
 from yaspin.spinners import Spinners
 
-from scripts.data_conversion.excel_to_md import excel_to_markdown
+from scripts.data_extraction.extract_data_from_xlsx import extract_data_from_xlsx
 from scripts.analysis.logistic_fitting import find_best_params
 from scripts.analysis.logistic_prediction import predict_future
 from scripts.visualization.plot_fitting import plot_fit_result
@@ -20,14 +20,14 @@ def main() -> None:
     os.makedirs(config.CACHE_DIR, exist_ok=True)
     os.makedirs(config.OUTPUT_DIR, exist_ok=True)
 
-    with yaspin(Spinners.line, text="ExcelをMarkdownに変換中") as spinner:
+    with yaspin(Spinners.line, text="Excelデータ抽出中") as spinner:
         try:
-            t_actual, P_actual, INPUT_EXCEL = excel_to_markdown(config.INPUT_DIR, config.OUTPUT_MD)
+            t_actual, P_actual = extract_data_from_xlsx(config.INPUT_DIR)
             spinner.ok("✅ ")
-            spinner.text = "Excel→Markdown変換＆データ取得 完了"
+            spinner.text = "Excelデータ抽出＆データ取得 完了"
         except Exception as e:
             spinner.fail("💥 ")
-            spinner.text = f"変換失敗: {e}"
+            spinner.text = f"抽出失敗: {e}"
             return
 
     with yaspin(Spinners.line, text="最適なパラメータを探索中") as spinner:
