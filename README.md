@@ -12,17 +12,6 @@ Excelファイルからデータを読み込み、最適なパラメータを自
 - **結果の可視化**: 元データとフィッティングした曲線、および将来予測を`matplotlib`で描画し、画像ファイルとして出力します。
 - **進捗表示**: コンソールに分析の進捗状況を分かりやすく表示します。
 
-## 動作要件
-
-- Python: `==3.12.4`
-- Library:
-  - `numpy`
-  - `pandas`
-  - `openpyxl`
-  - `matplotlib`
-  - `scikit-learn`
-  - `yaspin`
-
 ## 依存関係
 
 本プロジェクトは[Poetry](https://python-poetry.org/)によるライブラリの依存関係の管理を前提としています。
@@ -33,7 +22,7 @@ poetry install
 
 ## ディレクトリ構成
 
-```
+```text
 .
 ├── config/
 ├── input/
