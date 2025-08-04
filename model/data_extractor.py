@@ -120,7 +120,7 @@ class DataExtractor:
         if not np.all(np.diff(self.time_data) >= 0):
             return False
         
-        # 値データが非負かチェック（人口データの場合）
+        # 値データが非負かチェック（値データの場合）
         if np.any(self.value_data < 0):
             return False
         
