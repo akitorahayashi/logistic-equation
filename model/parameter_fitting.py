@@ -3,7 +3,6 @@
 """
 import sys
 from typing import Tuple, Dict, Optional
-import pandas as pd
 import numpy as np
 from .logistic_equation import LogisticEquation
 from config.model_parameters import ModelParameters
