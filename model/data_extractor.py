@@ -3,16 +3,17 @@
 """
 import os
 import sys
-from typing import Tuple, List
+from typing import Tuple, List, Optional
 import pandas as pd
 import numpy as np
+from pandas.api.types import is_numeric_dtype
 
 
 class DataExtractor:
     """
     Excelファイルからデータを抽出するクラス
     """
-    
+
     def __init__(self, file_path: str):
         """
         DataExtractor の初期化
@@ -21,8 +22,8 @@ class DataExtractor:
             file_path: 抽出するExcelファイルのパス
         """
         self.file_path = file_path
-        self.time_data: np.ndarray = None
-        self.value_data: np.ndarray = None
+        self.time_data: Optional[np.ndarray] = None
+        self.value_data: Optional[np.ndarray] = None
     
     def extract_data(self) -> Tuple[np.ndarray, np.ndarray]:
         """
@@ -44,12 +45,12 @@ class DataExtractor:
                 raise ValueError(f"1行目は 'time', 'value' という列名である必要があります。現在: {list(df.columns[:2])}")
             
             # データ型の確認
-            if not (np.issubdtype(df['time'].dtype, np.number) and np.issubdtype(df['value'].dtype, np.number)):
+            if not (is_numeric_dtype(df['time']) and is_numeric_dtype(df['value'])):
                 raise ValueError("'time'列と'value'列は数値データである必要があります")
             
             # データの保存
-            self.time_data = df['time'].values
-            self.value_data = df['value'].values
+            self.time_data = df['time'].to_numpy()
+            self.value_data = df['value'].to_numpy()
             
             return self.time_data, self.value_data
             

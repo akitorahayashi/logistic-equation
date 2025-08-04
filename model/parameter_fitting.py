@@ -2,10 +2,11 @@
 パラメータフィッティング機能
 """
 import sys
-from typing import Tuple, Dict
+from typing import Tuple, Dict, Optional
 import pandas as pd
 import numpy as np
 from .logistic_equation import LogisticEquation
+from config.model_parameters import ModelParameters
 
 
 class ParameterFitter:
@@ -13,7 +14,7 @@ class ParameterFitter:
     ロジスティック方程式のパラメータフィッティングを行うクラス
     """
     
-    def __init__(self, model_params, time_data: np.ndarray, value_data: np.ndarray):
+    def __init__(self, model_params: ModelParameters, time_data: np.ndarray, value_data: np.ndarray):
         """
         ParameterFitter の初期化
         
@@ -26,8 +27,8 @@ class ParameterFitter:
         self.model_params = model_params
         self.time_data = time_data
         self.value_data = value_data
-        self.best_params: Dict[str, float] = None
-        self.min_sse: float = None
+        self.best_params: Optional[Dict[str, float]] = None
+        self.min_sse: Optional[float] = None
 
     def fit_parameters(self) -> Tuple[Dict[str, float], float]:
         """

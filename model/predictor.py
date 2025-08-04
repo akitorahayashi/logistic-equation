@@ -4,6 +4,7 @@
 from typing import Tuple
 import numpy as np
 from .logistic_equation import LogisticEquation
+from config.prediction_settings import PredictionSettings
 
 
 class FuturePredictor:
@@ -11,7 +12,7 @@ class FuturePredictor:
     ロジスティック方程式による将来予測を行うクラス
     """
     
-    def __init__(self, equation: LogisticEquation, prediction_settings):
+    def __init__(self, equation: LogisticEquation, prediction_settings: PredictionSettings):
         """
         FuturePredictor の初期化
         
