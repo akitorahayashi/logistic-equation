@@ -1,7 +1,7 @@
 """
 可視化機能
 """
-from typing import Dict, Optional
+from typing import Dict, Tuple
 import numpy as np
 import matplotlib.pyplot as plt
 from .logistic_equation import LogisticEquation
@@ -11,18 +11,32 @@ from config.prediction_settings import PredictionSettings
 plt.rcParams['font.family'] = 'Hiragino Sans'
 plt.rcParams['axes.unicode_minus'] = False # マイナス記号の文字化け対策
 
+def _get_scaled_data_and_unit(value_array: np.ndarray) -> Tuple[np.ndarray, str]:
+    """
+    データ配列の最大値に応じて、適切な単位とスケーリングされたデータ配列を返す。
+    単位は「万」「億」「兆」をサポート。
+    """
+    max_val = np.max(value_array)
+    if max_val >= 10**12:
+        return value_array / 10**12, "兆"
+    elif max_val >= 10**8:
+        return value_array / 10**8, "億"
+    elif max_val >= 10**4:
+        return value_array / 10**4, "万"
+    else:
+        return value_array, ""
 
 class FittingVisualizer:
     """
     パラメータフィッティング結果を可視化するクラス
     """
     
-    def __init__(self, prediction_settings: Optional[PredictionSettings] = None):
+    def __init__(self, prediction_settings: PredictionSettings):
         """
         FittingVisualizer の初期化
         
         Args:
-            prediction_settings: PredictionSettingsインスタンス（オプション）
+            prediction_settings: PredictionSettingsインスタンス
         """
         self.prediction_settings = prediction_settings
         self.figure_size = (10, 6)
@@ -64,19 +78,39 @@ class FittingVisualizer:
             raise ValueError("方程式のパラメータが設定されていません。")
         
         v0: float = value_array[0]
-        time_model, value_model = equation.solve_runge_kutta(v0, time_array[0], time_array[-1], 1.0)
+        time_model, value_model = equation.solve_runge_kutta(v0, time_array[0], time_array[-1], 0.1)
+        
+        # 時間軸をオフセット値に変換
+        display_time_array = time_array + self.prediction_settings.start_year
+        display_time_model = time_model + self.prediction_settings.start_year
+        
+        # Kも含めてY軸の単位を動的に決定
+        all_values_for_scaling = np.concatenate([value_array, value_model, [equation.K]])
+        _, unit = _get_scaled_data_and_unit(all_values_for_scaling)
+
+        # スケールを決定
+        scale = 1
+        if unit == "兆":
+            scale = 10**12
+        elif unit == "億":
+            scale = 10**8
+        elif unit == "万":
+            scale = 10**4
+
+        scaled_value_array = value_array / scale
+        scaled_value_model = value_model / scale
+        scaled_K = equation.K / scale
         
         plt.figure(figsize=self.figure_size, dpi=self.dpi)
-        plt.plot(time_array, value_array, 'o', label='実データ')
-        plt.plot(time_model, value_model, '-', 
-                label=f'ロジスティック方程式 (γ={equation.gamma:.4f}, K={equation.K})')
+        plt.plot(display_time_array, scaled_value_array, 'o', label='実データ')
+        plt.plot(display_time_model, scaled_value_model, '-', 
+                label=f'ロジスティック方程式 (γ={equation.gamma:.4f}, K={scaled_K:.2f}{unit})')
         plt.title(title)
         plt.xlabel('時間')
-        plt.ylabel('値')
+        plt.ylabel(f'値 ({unit})')
         plt.legend()
         plt.grid(True)
         plt.savefig(output_path)
-        print(f"グラフを '{output_path}' として保存しました。")
         plt.close() # メモリリークを防ぐためにプロットを閉じる
     
     def plot_with_parameters(
@@ -150,31 +184,36 @@ class ForecastVisualizer:
         """
         plt.figure(figsize=self.figure_size, dpi=self.dpi)
 
-        # 実績データの表示用時間軸を計算（年固定）
+        # 実績データの表示用時間軸を計算
         actual_display_time = time_array + self.prediction_settings.start_year
         forecast_display_time = forecast_time_array + self.prediction_settings.start_year
 
+        # Y軸の単位を動的に決定
+        all_values = np.concatenate([value_array, forecast_value_array])
+        scaled_all_values, unit = _get_scaled_data_and_unit(all_values)
+        scaled_value_array = scaled_all_values[:len(value_array)]
+        scaled_forecast_value_array = scaled_all_values[len(value_array):]
+
         # 実績データのプロット
-        plt.plot(actual_display_time, value_array, 'o', 
-                label=f'実際のデータ ({actual_display_time[0]:.0f}-{actual_display_time[-1]:.0f}年)', 
+        plt.plot(actual_display_time, scaled_value_array, 'o', 
+                label=f'実績データ ({actual_display_time[0]:.0f}-{actual_display_time[-1]:.0f})', 
                 markersize=8, zorder=10)
 
         # 予測結果のプロット
-        plt.plot(forecast_display_time, forecast_value_array, '-', 
-                label=f'ロジスティック方程式による将来予測 ({forecast_display_time[-1]:.0f}年まで)')
+        plt.plot(forecast_display_time, scaled_forecast_value_array, '-', 
+                label=f'ロジスティック方程式による将来予測 ({forecast_display_time[-1]:.0f}まで)')
 
         plt.title(title)
-        plt.xlabel('年')
-        plt.ylabel('値')
+        plt.xlabel('時間')
+        plt.ylabel(f'値 ({unit})')
         
         # 予測開始時点に垂直線を追加
         plt.axvline(x=actual_display_time[-1], color='gray', linestyle='--', 
-                   label=f'予測開始 ({actual_display_time[-1]:.0f}年)')
+                   label=f'予測開始 ({actual_display_time[-1]:.0f})')
         
         plt.legend()
         plt.grid(True)
 
         # グラフをファイルに保存
         plt.savefig(output_path)
-        print(f"予測グラフを '{output_path}' として保存しました。")
-        plt.close() # メモリリークを防ぐためにプロットを閉じる
+        plt.close()

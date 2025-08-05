@@ -43,6 +43,11 @@ class LogisticEquation:
         """
         if self.gamma is None or self.K is None:
             raise ValueError("パラメータ gamma と K を先に設定してください")
+        
+        # Kが0に近い場合のオーバーフローを防止
+        if np.isclose(self.K, 0):
+            return 0
+            
         return self.gamma * v * (1 - v / self.K)
     
     def solve_runge_kutta(
@@ -75,11 +80,17 @@ class LogisticEquation:
         vs = np.zeros(n_steps)
         vs[0] = v0
         
-        for i in range(1, n_steps):
-            k1 = dt * self.differential_equation(t[i-1], vs[i-1])
-            k2 = dt * self.differential_equation(t[i-1] + dt/2, vs[i-1] + k1/2)
-            k3 = dt * self.differential_equation(t[i-1] + dt/2, vs[i-1] + k2/2)
-            k4 = dt * self.differential_equation(t[i-1] + dt, vs[i-1] + k3)
-            vs[i] = vs[i-1] + (k1 + 2*k2 + 2*k3 + k4) / 6
+        with np.errstate(over='raise', divide='raise', invalid='raise'):
+            for i in range(1, n_steps):
+                try:
+                    k1 = dt * self.differential_equation(t[i-1], vs[i-1])
+                    k2 = dt * self.differential_equation(t[i-1] + dt/2, vs[i-1] + k1/2)
+                    k3 = dt * self.differential_equation(t[i-1] + dt/2, vs[i-1] + k2/2)
+                    k4 = dt * self.differential_equation(t[i-1] + dt, vs[i-1] + k3)
+                    vs[i] = vs[i-1] + (k1 + 2*k2 + 2*k3 + k4) / 6
+                except FloatingPointError:
+                    # 計算が発散した場合は、残りの値を無限大で埋める
+                    vs[i:] = np.inf
+                    break
         
         return t, vs

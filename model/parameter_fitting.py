@@ -56,8 +56,12 @@ class ParameterFitter:
                 # 一時的にパラメータを設定
                 equation = LogisticEquation(gamma, K)
                 t_model, v_model = equation.solve_runge_kutta(
-                    v0, self.time_data[0], self.time_data[-1], 1.0
+                    v0, self.time_data[0], self.time_data[-1], 0.1
                 )
+                
+                # 計算結果が発散した場合はスキップ
+                if np.any(np.isinf(v_model)) or np.any(np.isnan(v_model)):
+                    continue
                 
                 # SSE計算のために、実績データ点に対応するモデル上の値を内挿
                 model_v_at_actual_t: np.ndarray = np.interp(self.time_data, t_model, v_model)
