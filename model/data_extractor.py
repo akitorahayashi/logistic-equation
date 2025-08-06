@@ -15,7 +15,7 @@ class DataExtractor:
     """
     
     @staticmethod
-    def extract_from_directory(input_dir: str) -> Tuple[np.ndarray, np.ndarray]:
+    def extract_from_directory(input_dir: str) -> Tuple[np.ndarray, np.ndarray, str]:
         """
         inputディレクトリからExcelファイル（.xlsx）を1つだけ特定し、データを抽出
         
@@ -23,7 +23,7 @@ class DataExtractor:
             input_dir (str): 入力ディレクトリのパス
         
         Returns:
-            Tuple[np.ndarray, np.ndarray]: (時間データの配列, 値データの配列)
+            Tuple[np.ndarray, np.ndarray, str]: (時間データの配列, 値データの配列, Excelファイル名)
         
         Raises:
             FileNotFoundError: Excelファイルが見つからない場合
