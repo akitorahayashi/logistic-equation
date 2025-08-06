@@ -25,6 +25,7 @@ package-mode = false
 mypy = "^1.17.1"
 types-openpyxl = "^3.1.5.20250602"
 pandas-stubs = "^2.2.2"
+types-tqdm = "^4.67.0.20250516"
 
 [tool.poetry.scripts]
 typecheck = "mypy ."
