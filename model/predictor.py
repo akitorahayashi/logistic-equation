@@ -1,10 +1,13 @@
 """
 将来予測機能
 """
+import os
+import pandas as pd
 from typing import Tuple
 import numpy as np
 from .logistic_equation import LogisticEquation
 from config.prediction_settings import PredictionSettings
+import config.config as config
 
 
 class FuturePredictor:
@@ -87,3 +90,41 @@ class FuturePredictor:
         )
         
         return t_forecast, v_forecast
+
+    def save_prediction_to_excel(
+        self,
+        t_forecast: np.ndarray,
+        v_forecast: np.ndarray,
+        filename: str,
+        interval: int = 1  # デフォルトは1年ごと
+    ) -> str:
+        """
+        予測結果をExcelファイルに保存する
+
+        Args:
+            t_forecast (np.ndarray): 予測時間配列
+            v_forecast (np.ndarray): 予測値配列
+            filename (str): 出力ファイル名
+            interval (int): データを抽出する時間間隔
+
+        Returns:
+            str: 保存したファイルのパス
+        """
+        # 時間が整数のインデックスを抽出
+        indices = np.where(t_forecast % interval == 0)[0]
+        
+        # 重複を削除
+        unique_indices = np.unique(indices)
+        
+        # データを抽出
+        time_points = t_forecast[unique_indices]
+        value_points = v_forecast[unique_indices]
+
+        df = pd.DataFrame({
+            'time': time_points,
+            'value': value_points
+        })
+
+        output_path = os.path.join(config.OUTPUT_DIR, filename)
+        df.to_excel(output_path, index=False, engine='openpyxl')
+        return output_path

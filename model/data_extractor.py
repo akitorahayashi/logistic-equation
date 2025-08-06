@@ -67,7 +67,7 @@ class DataExtractor:
             if np.any(value_data < 0):
                 raise ValueError("値データに負の値が含まれています")
             
-            return time_data, value_data
+            return time_data, value_data, excel_filename
             
         except FileNotFoundError:
             raise FileNotFoundError(f"入力ファイルが見つかりません: {excel_path}")

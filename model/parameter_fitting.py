@@ -4,6 +4,7 @@
 import sys
 from typing import Tuple, Dict, Optional
 import numpy as np
+from tqdm import tqdm
 from .logistic_equation import LogisticEquation
 from config.model_parameters import ModelParameters
 
@@ -50,27 +51,32 @@ class ParameterFitter:
         v0: float = self.value_data[0]
         best_params: Dict[str, float] = {"gamma": 0.0, "K": 0.0}
         min_sse: float = np.inf
+        
+        total_combinations = len(K_range) * len(gamma_range)
 
-        for K in K_range:
-            for gamma in gamma_range:
-                # 一時的にパラメータを設定
-                equation = LogisticEquation(gamma, K)
-                t_model, v_model = equation.solve_runge_kutta(
-                    v0, self.time_data[0], self.time_data[-1], 0.1
-                )
-                
-                # 計算結果が発散した場合はスキップ
-                if np.any(np.isinf(v_model)) or np.any(np.isnan(v_model)):
-                    continue
-                
-                # SSE計算のために、実績データ点に対応するモデル上の値を内挿
-                model_v_at_actual_t: np.ndarray = np.interp(self.time_data, t_model, v_model)
-                sse: float = np.sum((self.value_data - model_v_at_actual_t)**2)
-                
-                if sse < min_sse:
-                    min_sse = sse
-                    best_params["gamma"] = gamma
-                    best_params["K"] = K
+        with tqdm(total=total_combinations, desc="最適なパラメータを探索中") as pbar:
+            for K in K_range:
+                for gamma in gamma_range:
+                    # 一時的にパラメータを設定
+                    equation = LogisticEquation(gamma, K)
+                    t_model, v_model = equation.solve_runge_kutta(
+                        v0, self.time_data[0], self.time_data[-1], 0.1
+                    )
+                    
+                    # 計算結果が発散した場合はスキップ
+                    if np.any(np.isinf(v_model)) or np.any(np.isnan(v_model)):
+                        pbar.update(1)
+                        continue
+                    
+                    # SSE計算のために、実績データ点に対応するモデル上の値を内挿
+                    model_v_at_actual_t: np.ndarray = np.interp(self.time_data, t_model, v_model)
+                    sse: float = np.sum((self.value_data - model_v_at_actual_t)**2)
+                    
+                    if sse < min_sse:
+                        min_sse = sse
+                        best_params["gamma"] = gamma
+                        best_params["K"] = K
+                    pbar.update(1)
         
         self.best_params = best_params
         self.min_sse = min_sse
