@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.figure
 from .logistic_equation import LogisticEquation
-from src.config.prediction_settings import PredictionSettings
+from config.prediction_settings import PredictionSettings
 
 # 日本語フォントの設定 (macOS標準のヒラギノ角ゴシック)
 # Streamlit Cloud/Linux環境を考慮し、フォントが見つからない場合はスキップ
