@@ -9,6 +9,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from dotenv import load_dotenv
 
+
 class TestE2E:
     """End-to-end tests that verify the actual site functionality"""
 
@@ -17,10 +18,12 @@ class TestE2E:
         # Load environment variables
         load_dotenv()
         test_port = os.getenv("TEST_PORT", "8502")
-        
+
         # Get the project root (two levels up from tests/e2e/test_e2e.py)
-        project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        
+        project_root = os.path.dirname(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        )
+
         # Correct path to main.py in the src directory
         app_path = os.path.join(project_root, "src", "main.py")
 
@@ -47,9 +50,9 @@ class TestE2E:
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
         chrome_options.add_argument("--disable-gpu")
-        
+
         driver = None
-        
+
         try:
             # Wait for server to start (max 30 seconds)
             max_wait = 30
@@ -68,7 +71,9 @@ class TestE2E:
                 time.sleep(1)
                 wait_time += 1
 
-            assert server_ready, f"Streamlit server failed to start within {max_wait} seconds"
+            assert (
+                server_ready
+            ), f"Streamlit server failed to start within {max_wait} seconds"
 
             # Initialize WebDriver
             driver = webdriver.Chrome(options=chrome_options)
@@ -76,10 +81,10 @@ class TestE2E:
 
             # Wait for the main Streamlit app to load
             wait = WebDriverWait(driver, 20)
-            
+
             # Check that the page doesn't contain error messages about module imports
             page_source = driver.page_source
-            
+
             # Look for common error indicators
             error_indicators = [
                 "ModuleNotFoundError",
@@ -87,28 +92,36 @@ class TestE2E:
                 "No module named",
                 "500 Internal Server Error",
                 "Something went wrong",
-                "Traceback"
+                "Traceback",
             ]
-            
+
             for error in error_indicators:
                 assert error not in page_source, f"Found error in page: {error}"
-            
+
             # Wait for Streamlit to fully load by checking for the main container
             try:
-                wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "[data-testid='stApp']")))
+                wait.until(
+                    EC.presence_of_element_located(
+                        (By.CSS_SELECTOR, "[data-testid='stApp']")
+                    )
+                )
                 print("✅ Streamlit app loaded successfully")
             except Exception as e:
-                print(f"⚠️  Could not find main Streamlit container, but no errors detected: {e}")
-            
+                print(
+                    f"⚠️  Could not find main Streamlit container, but no errors detected: {e}"
+                )
+
             # Additional check: verify title or key elements exist
             title = driver.title
-            assert "Streamlit" in title or len(title) > 0, "Page title is empty or invalid"
+            assert (
+                "Streamlit" in title or len(title) > 0
+            ), "Page title is empty or invalid"
 
         finally:
             # Clean up: close browser and terminate the process
             if driver:
                 driver.quit()
-            
+
             process.terminate()
             try:
                 process.wait(timeout=10)
@@ -121,10 +134,12 @@ class TestE2E:
         # Load environment variables
         load_dotenv()
         test_port = os.getenv("TEST_PORT", "8502")
-        
+
         # Get the project root (two levels up from tests/e2e/test_e2e.py)
-        project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        
+        project_root = os.path.dirname(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        )
+
         # Correct path to main.py in the src directory
         app_path = os.path.join(project_root, "src", "main.py")
 
@@ -149,9 +164,9 @@ class TestE2E:
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
         chrome_options.add_argument("--disable-gpu")
-        
+
         driver = None
-        
+
         try:
             # Wait for server to start
             max_wait = 30
@@ -170,38 +185,44 @@ class TestE2E:
                 time.sleep(1)
                 wait_time += 1
 
-            assert server_ready, f"Streamlit server failed to start within {max_wait} seconds"
+            assert (
+                server_ready
+            ), f"Streamlit server failed to start within {max_wait} seconds"
 
             driver = webdriver.Chrome(options=chrome_options)
             driver.get(f"http://localhost:{test_port}")
 
             wait = WebDriverWait(driver, 20)
-            
+
             # Wait for the Streamlit app to be ready
-            wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "[data-testid='stApp']")))
-            
+            wait.until(
+                EC.presence_of_element_located(
+                    (By.CSS_SELECTOR, "[data-testid='stApp']")
+                )
+            )
+
             # Give a bit more time for all components to load
             time.sleep(3)
-            
+
             # Check for any runtime errors that might appear after interaction
             page_source = driver.page_source
             runtime_errors = [
                 "AttributeError",
-                "TypeError", 
+                "TypeError",
                 "ValueError",
                 "KeyError",
-                "NameError"
+                "NameError",
             ]
-            
+
             for error in runtime_errors:
                 assert error not in page_source, f"Found runtime error in page: {error}"
-                
+
             print("✅ App functionality test passed - no runtime errors detected")
 
         finally:
             if driver:
                 driver.quit()
-            
+
             process.terminate()
             try:
                 process.wait(timeout=10)

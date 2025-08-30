@@ -4,6 +4,7 @@ import numpy as np
 from typing import Dict, Any, Tuple, Optional
 
 # --- アプリケーションのコアロジックとUIコンポーネントのインポート ---
+import os
 from components.sidebar import render_sidebar
 from components.results_display import render_results
 from config.model_parameters import ModelParameters
@@ -14,7 +15,10 @@ from model.visualizer import FittingVisualizer, ForecastVisualizer
 
 st.set_page_config(page_title="ロジスティック方程式分析ツール", layout="wide")
 
-def extract_data_from_uploaded_file(uploaded_file) -> Optional[Tuple[np.ndarray, np.ndarray, str]]:
+
+def extract_data_from_uploaded_file(
+    uploaded_file,
+) -> Optional[Tuple[np.ndarray, np.ndarray, str]]:
     """アップロードされたExcelファイルからデータを抽出する"""
     try:
         df = pd.read_excel(uploaded_file, header=None)
@@ -33,11 +37,12 @@ def extract_data_from_uploaded_file(uploaded_file) -> Optional[Tuple[np.ndarray,
         st.error(f"Excelファイルの読み込み中にエラーが発生しました: {e}")
         return None
 
+
 def run_analysis(settings: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     """
     ユーザー設定に基づいて分析パイプラインを実行する。
     """
-    uploaded_file = settings.get('uploaded_file')
+    uploaded_file = settings.get("uploaded_file")
     if not uploaded_file:
         st.warning("分析するファイルをアップロードしてください。")
         return None
@@ -51,12 +56,15 @@ def run_analysis(settings: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     try:
         # 1. 設定の初期化
         model_params = ModelParameters(
-            k_min=settings['k_min'], k_max=settings['k_max'], k_step=settings['k_step'],
-            gamma_min=settings['gamma_min'], gamma_max=settings['gamma_max'], gamma_step=settings['gamma_step']
+            k_min=settings["k_min"],
+            k_max=settings["k_max"],
+            k_step=settings["k_step"],
+            gamma_min=settings["gamma_min"],
+            gamma_max=settings["gamma_max"],
+            gamma_step=settings["gamma_step"],
         )
         prediction_settings = PredictionSettings(
-            start_year=settings['start_year'],
-            forecast_end_t=settings['forecast_end_t']
+            start_year=settings["start_year"], forecast_end_t=settings["forecast_end_t"]
         )
 
         # 2. パラメータフィッティング
@@ -71,7 +79,9 @@ def run_analysis(settings: Dict[str, Any]) -> Optional[Dict[str, Any]]:
 
         # 4. 将来予測
         predictor = FuturePredictor(fitter.get_fitted_equation(), prediction_settings)
-        forecast_time_array, forecast_value_array = predictor.predict(time_array, value_array)
+        forecast_time_array, forecast_value_array = predictor.predict(
+            time_array, value_array
+        )
 
         # 5. 予測結果の可視化
         forecast_visualizer = ForecastVisualizer(prediction_settings)
@@ -80,7 +90,9 @@ def run_analysis(settings: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         )
 
         # 6. 予測データをDataFrameに保存
-        forecast_df = predictor.create_prediction_dataframe(forecast_time_array, forecast_value_array)
+        forecast_df = predictor.create_prediction_dataframe(
+            forecast_time_array, forecast_value_array
+        )
 
         return {
             "best_params": best_params,
@@ -88,15 +100,17 @@ def run_analysis(settings: Dict[str, Any]) -> Optional[Dict[str, Any]]:
             "fitting_fig": fitting_fig,
             "forecast_fig": forecast_fig,
             "forecast_df": forecast_df,
-            "excel_filename": excel_filename
+            "excel_filename": excel_filename,
         }
 
     except Exception as e:
         st.error(f"分析中にエラーが発生しました: {e}")
         # スタックトレースをログに出力するとデバッグに役立つ
         import traceback
+
         st.error(f"詳細: {traceback.format_exc()}")
         return None
+
 
 def main():
     """
@@ -109,12 +123,14 @@ def main():
     st.title("ロジスティック方程式による時系列データ分析")
 
     # セッション状態で分析結果を管理
-    if 'analysis_results' not in st.session_state:
+    if "analysis_results" not in st.session_state:
         st.session_state.analysis_results = None
 
     # 分析実行ボタンが押されたら分析を実行
-    if user_settings['run_analysis']:
-        with st.spinner('分析を実行中...パラメータ探索には時間がかかる場合があります。'):
+    if user_settings["run_analysis"]:
+        with st.spinner(
+            "分析を実行中...パラメータ探索には時間がかかる場合があります。"
+        ):
             results = run_analysis(user_settings)
             st.session_state.analysis_results = results
 
@@ -124,7 +140,8 @@ def main():
     else:
         # 初期表示または分析前の状態
         st.info("左のサイドバーから設定を行い、「分析実行」ボタンを押してください。")
-        st.markdown("""
+        st.markdown(
+            """
         ### 使い方
         1.  **データファイルのアップロード**:
             - 分析したい時系列データを含むExcelファイル（.xlsx）をアップロードします。
@@ -138,7 +155,9 @@ def main():
             - 「分析実行」ボタンをクリックすると、パラメータ探索と将来予測が始まります。
 
         分析が完了すると、このエリアに結果（最適パラメータ、グラフ、予測データ）が表示されます。
-        """)
+        """
+        )
+
 
 if __name__ == "__main__":
     main()

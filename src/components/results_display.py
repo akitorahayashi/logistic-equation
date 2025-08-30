@@ -1,18 +1,19 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.figure
 from typing import Dict, Any
 from io import BytesIO
+
 
 def to_excel(df: pd.DataFrame) -> bytes:
     """
     DataFrameをインメモリのExcelファイルに変換する。
     """
     output = BytesIO()
-    with pd.ExcelWriter(output, engine='openpyxl') as writer:
-        df.to_excel(writer, index=False, sheet_name='Prediction')
+    with pd.ExcelWriter(output, engine="openpyxl") as writer:
+        df.to_excel(writer, index=False, sheet_name="Prediction")
     processed_data = output.getvalue()
     return processed_data
+
 
 def render_results(results: Dict[str, Any]) -> None:
     """
@@ -35,14 +36,14 @@ def render_results(results: Dict[str, Any]) -> None:
         st.subheader("最適なパラメータ")
 
         # 最適パラメータをメトリックとして表示
-        best_params = results.get('best_params', {})
-        min_sse = results.get('min_sse', 0)
+        best_params = results.get("best_params", {})
+        min_sse = results.get("min_sse", 0)
 
         col1, col2, col3 = st.columns(3)
         col1.metric("成長率 (γ)", f"{best_params.get('gamma', 0):.4f}")
 
         # Kの値を億や兆に変換して表示
-        k_value = best_params.get('K', 0)
+        k_value = best_params.get("K", 0)
         if k_value >= 10**12:
             k_display = f"{k_value / 10**12:.2f} 兆"
         elif k_value >= 10**8:
@@ -56,7 +57,7 @@ def render_results(results: Dict[str, Any]) -> None:
         col3.metric("最小二乗誤差 (SSE)", f"{min_sse:,.2f}")
 
         st.subheader("適合結果のプロット")
-        fitting_fig = results.get('fitting_fig')
+        fitting_fig = results.get("fitting_fig")
         if fitting_fig:
             st.pyplot(fitting_fig)
         else:
@@ -64,7 +65,7 @@ def render_results(results: Dict[str, Any]) -> None:
 
     with tab2:
         st.subheader("将来予測のプロット")
-        forecast_fig = results.get('forecast_fig')
+        forecast_fig = results.get("forecast_fig")
         if forecast_fig:
             st.pyplot(forecast_fig)
         else:
@@ -72,21 +73,21 @@ def render_results(results: Dict[str, Any]) -> None:
 
     with tab3:
         st.subheader("将来予測データ")
-        forecast_df = results.get('forecast_df')
+        forecast_df = results.get("forecast_df")
 
         if forecast_df is not None and not forecast_df.empty:
             st.dataframe(forecast_df)
 
             # ダウンロードボタン
             excel_data = to_excel(forecast_df)
-            original_filename = results.get('excel_filename', 'data')
+            original_filename = results.get("excel_filename", "data")
             download_filename = f"forecast_{original_filename}"
 
             st.download_button(
                 label="予測データをExcelとしてダウンロード",
                 data=excel_data,
                 file_name=download_filename,
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             )
         else:
             st.warning("予測データを表示できませんでした。")

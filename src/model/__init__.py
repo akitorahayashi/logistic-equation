@@ -1,6 +1,7 @@
 """
 logistic equationモデリングパッケージ
 """
+
 from .logistic_equation import LogisticEquation
 from .parameter_fitting import ParameterFitter
 from .predictor import FuturePredictor
@@ -9,9 +10,9 @@ from .data_extractor import DataExtractor
 
 __all__ = [
     "LogisticEquation",
-    "ParameterFitter", 
+    "ParameterFitter",
     "FuturePredictor",
     "FittingVisualizer",
     "ForecastVisualizer",
-    "DataExtractor"
+    "DataExtractor",
 ]
