@@ -6,25 +6,27 @@ import os
 import pandas as pd
 from typing import Tuple
 import numpy as np
-from .logistic_equation import LogisticEquation
-from config.prediction_settings import PredictionSettings
-import config.config as config
+from models.logistic_equation import LogisticEquationModel
+from schemas.prediction_settings_schema import PredictionSettingsSchema
+from config import config
 
 
-class FuturePredictor:
+class FuturePredictorService:
     """
-    ロジスティック方程式による将来予測を行うクラス
+    ロジスティック方程式による将来予測を行うサービスクラス
     """
 
     def __init__(
-        self, equation: LogisticEquation, prediction_settings: PredictionSettings
+        self,
+        equation: LogisticEquationModel,
+        prediction_settings: PredictionSettingsSchema,
     ):
         """
         FuturePredictor の初期化
 
         Args:
-            equation (LogisticEquation): フィッティング済みの方程式
-            prediction_settings: PredictionSettingsインスタンス
+            equation (LogisticEquationModel): フィッティング済みの方程式
+            prediction_settings: PredictionSettingsSchemaインスタンス
         """
         self.equation = equation
         self.prediction_settings = prediction_settings
@@ -129,7 +131,9 @@ class FuturePredictor:
         df = pd.DataFrame({"time": time_points, "value": value_points})
 
         # 拡張子の保証
-        safe_name = filename if filename.lower().endswith(".xlsx") else f"{filename}.xlsx"
+        safe_name = (
+            filename if filename.lower().endswith(".xlsx") else f"{filename}.xlsx"
+        )
         # ディレクトリ作成（存在しない場合）
         os.makedirs(config.OUTPUT_DIR, exist_ok=True)
         output_path = os.path.join(config.OUTPUT_DIR, safe_name)

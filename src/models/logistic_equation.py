@@ -6,9 +6,9 @@ from typing import Tuple
 import numpy as np
 
 
-class LogisticEquation:
+class LogisticEquationModel:
     """
-    ロジスティック方程式のクラス
+    ロジスティック方程式のモデルクラス
 
     dV/dt = gamma * V * (1 - V/K)
 

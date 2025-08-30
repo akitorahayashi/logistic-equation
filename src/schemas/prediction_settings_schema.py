@@ -3,8 +3,8 @@
 """
 
 
-class PredictionSettings:
-    """予測設定を管理するクラス（年単位固定）"""
+class PredictionSettingsSchema:
+    """予測設定を管理するスキーマクラス（年単位固定）"""
 
     def __init__(self, start_year: int, forecast_end_t: int):
         """

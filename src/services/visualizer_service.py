@@ -6,8 +6,8 @@ from typing import Dict, Tuple
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.figure
-from .logistic_equation import LogisticEquation
-from config.prediction_settings import PredictionSettings
+from models.logistic_equation import LogisticEquationModel
+from schemas.prediction_settings_schema import PredictionSettingsSchema
 
 # 日本語フォントの設定 (macOS標準のヒラギノ角ゴシック)
 # Streamlit Cloud/Linux環境を考慮し、フォントが見つからない場合はスキップ
@@ -34,17 +34,17 @@ def _get_scaled_data_and_unit(value_array: np.ndarray) -> Tuple[np.ndarray, str]
         return value_array, ""
 
 
-class FittingVisualizer:
+class FittingVisualizerService:
     """
-    パラメータフィッティング結果を可視化するクラス
+    パラメータフィッティング結果を可視化するサービスクラス
     """
 
-    def __init__(self, prediction_settings: PredictionSettings):
+    def __init__(self, prediction_settings: PredictionSettingsSchema):
         """
-        FittingVisualizer の初期化
+        FittingVisualizerService の初期化
 
         Args:
-            prediction_settings: PredictionSettingsインスタンス
+            prediction_settings: PredictionSettingsSchemaインスタンス
         """
         self.prediction_settings = prediction_settings
         self.figure_size = (10, 6)
@@ -67,7 +67,7 @@ class FittingVisualizer:
         self,
         time_array: np.ndarray,
         value_array: np.ndarray,
-        equation: LogisticEquation,
+        equation: LogisticEquationModel,
         title: str = "実データとロジスティック方程式の比較",
     ) -> matplotlib.figure.Figure:
         """
@@ -76,7 +76,7 @@ class FittingVisualizer:
         Args:
             time_array (np.ndarray): 実績データの時刻
             value_array (np.ndarray): 実績データの値
-            equation (LogisticEquation): フィッティング済みの方程式
+            equation (LogisticEquationModel): フィッティング済みの方程式
             title (str): グラフのタイトル
 
         Returns:
@@ -150,21 +150,21 @@ class FittingVisualizer:
         Returns:
             matplotlib.figure.Figure: プロットされたグラフのFigureオブジェクト
         """
-        equation = LogisticEquation(best_params["gamma"], best_params["K"])
+        equation = LogisticEquationModel(best_params["gamma"], best_params["K"])
         return self.plot_with_equation(time_array, value_array, equation, title)
 
 
-class ForecastVisualizer:
+class ForecastVisualizerService:
     """
-    将来予測結果を可視化するクラス
+    将来予測結果を可視化するサービスクラス
     """
 
-    def __init__(self, prediction_settings: PredictionSettings):
+    def __init__(self, prediction_settings: PredictionSettingsSchema):
         """
-        ForecastVisualizer の初期化
+        ForecastVisualizerService の初期化
 
         Args:
-            prediction_settings: PredictionSettingsインスタンス（必須）
+            prediction_settings: PredictionSettingsSchemaインスタンス（必須）
         """
         self.prediction_settings = prediction_settings
         self.figure_size = (12, 7)

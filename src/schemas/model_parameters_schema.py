@@ -7,7 +7,7 @@ from dataclasses import dataclass
 
 
 @dataclass
-class ParameterRange:
+class ParameterRangeSchema:
     """パラメータの範囲設定"""
 
     min_val: float
@@ -23,8 +23,8 @@ class ParameterRange:
         return len(self.get_range())
 
 
-class ModelParameters:
-    """モデルパラメータを管理するクラス"""
+class ModelParametersSchema:
+    """モデルパラメータを管理するスキーマクラス"""
 
     def __init__(
         self,
@@ -46,8 +46,8 @@ class ModelParameters:
             gamma_max: γパラメータの最大値
             gamma_step: γパラメータの刻み幅
         """
-        self.k_range = ParameterRange(k_min, k_max, k_step)
-        self.gamma_range = ParameterRange(gamma_min, gamma_max, gamma_step)
+        self.k_range = ParameterRangeSchema(k_min, k_max, k_step)
+        self.gamma_range = ParameterRangeSchema(gamma_min, gamma_max, gamma_step)
 
     def get_k_range(self) -> np.ndarray:
         """Kパラメータの探索範囲を取得"""
@@ -68,8 +68,8 @@ class ModelParameters:
 
     def update_k_range(self, min_val: float, max_val: float, step: float) -> None:
         """Kパラメータの範囲を更新"""
-        self.k_range = ParameterRange(min_val, max_val, step)
+        self.k_range = ParameterRangeSchema(min_val, max_val, step)
 
     def update_gamma_range(self, min_val: float, max_val: float, step: float) -> None:
         """γパラメータの範囲を更新"""
-        self.gamma_range = ParameterRange(min_val, max_val, step)
+        self.gamma_range = ParameterRangeSchema(min_val, max_val, step)

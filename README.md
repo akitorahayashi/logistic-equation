@@ -46,9 +46,25 @@ poetry install
 │   │   ├── sidebar.py
 │   │   └── results_display.py
 │   ├── config/
-│   ├── model/
+│   │   └── config.py
+│   ├── models/
+│   │   └── logistic_equation.py
+│   ├── schemas/
+│   │   ├── model_parameters_schema.py
+│   │   └── prediction_settings_schema.py
+│   ├── services/
+│   │   ├── data_extractor_service.py
+│   │   ├── parameter_fitting_service.py
+│   │   ├── predictor_service.py
+│   │   └── visualizer_service.py
 │   └── main.py  <-- Application entry point
 ├── tests/
+│   ├── unit/
+│   │   ├── models/
+│   │   ├── schemas/
+│   │   └── services/
+│   ├── build/
+│   └── e2e/
 ├── Makefile
 ├── pyproject.toml
 └── README.md

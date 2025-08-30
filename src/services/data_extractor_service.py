@@ -9,9 +9,9 @@ import numpy as np
 from pandas.api.types import is_numeric_dtype
 
 
-class DataExtractor:
+class DataExtractorService:
     """
-    Excelファイルからデータを抽出するクラス
+    Excelファイルからデータを抽出するサービスクラス
     """
 
     @staticmethod
@@ -46,7 +46,9 @@ class DataExtractor:
             # 列名の確認
             required = {"time", "value"}
             if not required.issubset(set(df.columns)):
-                raise ValueError(f"列名に 'time', 'value' が必要です。現在: {list(df.columns)}")
+                raise ValueError(
+                    f"列名に 'time', 'value' が必要です。現在: {list(df.columns)}"
+                )
             # 以降の処理で順序を固定
             df = df[["time", "value"]]
 
@@ -77,5 +79,6 @@ class DataExtractor:
 
         except FileNotFoundError:
             raise FileNotFoundError(f"入力ファイルが見つかりません: {excel_path}")
-        except Exception as e:
-            raise Exception(f"データ抽出エラー: {e}")
+        except ValueError as e:
+            # Re-raise ValueError to be caught by the test
+            raise e

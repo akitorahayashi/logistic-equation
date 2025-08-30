@@ -7,11 +7,14 @@ from typing import Dict, Any, Tuple, Optional
 import os
 from components.sidebar import render_sidebar
 from components.results_display import render_results
-from config.model_parameters import ModelParameters
-from config.prediction_settings import PredictionSettings
-from model.parameter_fitting import ParameterFitter
-from model.predictor import FuturePredictor
-from model.visualizer import FittingVisualizer, ForecastVisualizer
+from schemas.model_parameters_schema import ModelParametersSchema
+from schemas.prediction_settings_schema import PredictionSettingsSchema
+from services.parameter_fitting_service import ParameterFitterService
+from services.predictor_service import FuturePredictorService
+from services.visualizer_service import (
+    FittingVisualizerService,
+    ForecastVisualizerService,
+)
 
 st.set_page_config(page_title="ロジスティック方程式分析ツール", layout="wide")
 
@@ -55,7 +58,7 @@ def run_analysis(settings: Dict[str, Any]) -> Optional[Dict[str, Any]]:
 
     try:
         # 1. 設定の初期化
-        model_params = ModelParameters(
+        model_params = ModelParametersSchema(
             k_min=settings["k_min"],
             k_max=settings["k_max"],
             k_step=settings["k_step"],
@@ -63,28 +66,30 @@ def run_analysis(settings: Dict[str, Any]) -> Optional[Dict[str, Any]]:
             gamma_max=settings["gamma_max"],
             gamma_step=settings["gamma_step"],
         )
-        prediction_settings = PredictionSettings(
+        prediction_settings = PredictionSettingsSchema(
             start_year=settings["start_year"], forecast_end_t=settings["forecast_end_t"]
         )
 
         # 2. パラメータフィッティング
-        fitter = ParameterFitter(model_params, time_array, value_array)
+        fitter = ParameterFitterService(model_params, time_array, value_array)
         best_params, min_sse = fitter.fit_parameters()
 
         # 3. フィッティング結果の可視化
-        fitting_visualizer = FittingVisualizer(prediction_settings)
+        fitting_visualizer = FittingVisualizerService(prediction_settings)
         fitting_fig = fitting_visualizer.plot_with_equation(
             time_array, value_array, fitter.get_fitted_equation()
         )
 
         # 4. 将来予測
-        predictor = FuturePredictor(fitter.get_fitted_equation(), prediction_settings)
+        predictor = FuturePredictorService(
+            fitter.get_fitted_equation(), prediction_settings
+        )
         forecast_time_array, forecast_value_array = predictor.predict(
             time_array, value_array
         )
 
         # 5. 予測結果の可視化
-        forecast_visualizer = ForecastVisualizer(prediction_settings)
+        forecast_visualizer = ForecastVisualizerService(prediction_settings)
         forecast_fig = forecast_visualizer.plot_forecast(
             time_array, value_array, forecast_time_array, forecast_value_array
         )
