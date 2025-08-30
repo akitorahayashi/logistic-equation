@@ -2,6 +2,7 @@ import pytest
 import pandas as pd
 import numpy as np
 from unittest.mock import patch
+import os
 from services.data_extractor_service import DataExtractorService
 
 
@@ -34,7 +35,7 @@ class TestDataExtractorService:
         np.testing.assert_array_equal(value_data, mock_df["value"].values)
         assert filename == "test_data.xlsx"
         mock_read_excel.assert_called_once_with(
-            "dummy_dir/test_data.xlsx", header=0, engine="openpyxl"
+            os.path.join("dummy_dir", "test_data.xlsx"), header=0, engine="openpyxl"
         )
 
     @patch("os.listdir")

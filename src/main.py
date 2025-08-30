@@ -28,6 +28,9 @@ def extract_data_from_uploaded_file(
         if df.shape[1] < 2:
             st.error("Excelファイルには少なくとも2つの列（時間と値）が必要です。")
             return None
+        # 先頭2列を数値化し、欠損行を除去
+        df = df.iloc[:, :2].apply(pd.to_numeric, errors="coerce")
+        df = df.dropna(subset=[df.columns[0], df.columns[1]])
 
         time_array = df.iloc[:, 0].values
         value_array = df.iloc[:, 1].values

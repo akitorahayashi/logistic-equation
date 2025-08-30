@@ -67,18 +67,21 @@ class TestFuturePredictorService:
     def test_save_prediction_to_excel(
         self, mock_to_excel, mock_makedirs, mock_equation, mock_settings
     ):
-        """予測結果が正しくExcelに保存されるか（の呼び出しが行われるか）テスト"""
+        """予測結果が正しくExcelに保存されるか(の呼び出しが行われるか)テスト"""
         predictor = FuturePredictorService(mock_equation, mock_settings)
         t_forecast = np.array([0, 1, 2])
         v_forecast = np.array([10, 20, 30])
 
-        with patch("config.config.OUTPUT_DIR", "mock_output"):
+        # 使用側に合わせて patch 先をモジュール解決名で指定
+        with patch("services.predictor_service.config.OUTPUT_DIR", "mock_output"):
             path = predictor.save_prediction_to_excel(
                 t_forecast, v_forecast, "test_output", interval=1
             )
 
         mock_makedirs.assert_called_once_with("mock_output", exist_ok=True)
-        mock_to_excel.assert_called_once()
+        mock_to_excel.assert_called_once_with(
+            "mock_output/test_output.xlsx", index=False, engine="openpyxl"
+        )
         assert path == "mock_output/test_output.xlsx"
 
     def test_save_prediction_to_excel_invalid_interval(

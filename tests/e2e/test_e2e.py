@@ -1,4 +1,5 @@
 import os
+import socket
 import subprocess
 import time
 import requests
@@ -17,7 +18,13 @@ class TestE2E:
         """Test that the Streamlit app loads completely without module import errors"""
         # Load environment variables
         load_dotenv()
-        test_port = os.getenv("TEST_PORT", "8502")
+
+        def _free_port():
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.bind(("", 0))
+                return str(s.getsockname()[1])
+
+        test_port = os.getenv("TEST_PORT", _free_port())
 
         # Get the project root (two levels up from tests/e2e/test_e2e.py)
         project_root = os.path.dirname(
@@ -39,9 +46,14 @@ class TestE2E:
                 "--server.headless=true",
             ],
             cwd=project_root,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.STDOUT,
             text=True,
+            # Clean termination across platforms
+            preexec_fn=(os.setsid if os.name == "posix" else None),
+            creationflags=(
+                subprocess.CREATE_NEW_PROCESS_GROUP if os.name == "nt" else 0
+            ),
         )
 
         # Set up Chrome options for headless mode
@@ -122,7 +134,16 @@ class TestE2E:
             if driver:
                 driver.quit()
 
-            process.terminate()
+            if os.name == "posix":
+                import signal
+                import os as _os
+
+                try:
+                    _os.killpg(process.pid, signal.SIGTERM)
+                except Exception:
+                    process.terminate()
+            else:
+                process.terminate()
             try:
                 process.wait(timeout=10)
             except subprocess.TimeoutExpired:
@@ -133,7 +154,13 @@ class TestE2E:
         """Test basic functionality and user interaction without errors"""
         # Load environment variables
         load_dotenv()
-        test_port = os.getenv("TEST_PORT", "8502")
+
+        def _free_port():
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.bind(("", 0))
+                return str(s.getsockname()[1])
+
+        test_port = os.getenv("TEST_PORT", _free_port())
 
         # Get the project root (two levels up from tests/e2e/test_e2e.py)
         project_root = os.path.dirname(
@@ -154,9 +181,14 @@ class TestE2E:
                 "--server.headless=true",
             ],
             cwd=project_root,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.STDOUT,
             text=True,
+            # Clean termination across platforms
+            preexec_fn=(os.setsid if os.name == "posix" else None),
+            creationflags=(
+                subprocess.CREATE_NEW_PROCESS_GROUP if os.name == "nt" else 0
+            ),
         )
 
         chrome_options = Options()
@@ -223,7 +255,16 @@ class TestE2E:
             if driver:
                 driver.quit()
 
-            process.terminate()
+            if os.name == "posix":
+                import signal
+                import os as _os
+
+                try:
+                    _os.killpg(process.pid, signal.SIGTERM)
+                except Exception:
+                    process.terminate()
+            else:
+                process.terminate()
             try:
                 process.wait(timeout=10)
             except subprocess.TimeoutExpired:

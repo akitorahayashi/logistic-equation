@@ -34,10 +34,6 @@ ruff = "^0.5.5"
 python-dotenv = "^1.0.0"
 selenium = "^4.15.0"
 
-[tool.poetry.scripts]
-typecheck = "mypy ."
-run = "streamlit run src/main.py"
-
 [tool.mypy]
 python_version = "3.12"
 warn_return_any = true

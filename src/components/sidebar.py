@@ -47,7 +47,7 @@ def render_sidebar() -> Dict[str, Any]:
         "最大値 (K_max)", value=30.0, min_value=0.0, step=1.0, format="%.2f"
     )
     k_step = st.sidebar.number_input(
-        "ステップ (K_step)", value=5.0, min_value=0.0, step=1.0, format="%.2f"
+        "ステップ (K_step)", value=5.0, min_value=0.01, step=1.0, format="%.2f"
     )
 
     # 実際の値に変換
@@ -66,7 +66,7 @@ def render_sidebar() -> Dict[str, Any]:
         "最大値 (γ_max)", value=0.0350, min_value=0.0, step=0.0001, format="%.4f"
     )
     gamma_step = st.sidebar.number_input(
-        "ステップ (γ_step)", value=0.0005, min_value=0.0, step=0.0001, format="%.4f"
+        "ステップ (γ_step)", value=0.0005, min_value=0.0001, step=0.0001, format="%.4f"
     )
 
     settings["gamma_min"] = gamma_min

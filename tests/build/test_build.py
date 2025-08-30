@@ -33,6 +33,11 @@ class TestBuild:
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
+            # Clean termination across platforms
+            preexec_fn=(os.setsid if os.name == "posix" else None),
+            creationflags=(
+                subprocess.CREATE_NEW_PROCESS_GROUP if os.name == "nt" else 0
+            ),
         )
 
         try:
@@ -72,7 +77,15 @@ class TestBuild:
 
         finally:
             # Clean up: terminate the process
-            process.terminate()
+            if os.name == "posix":
+                import signal
+                import os as _os
+                try:
+                    _os.killpg(process.pid, signal.SIGTERM)
+                except Exception:
+                    process.terminate()
+            else:
+                process.terminate()
             try:
                 process.wait(timeout=5)
             except subprocess.TimeoutExpired:

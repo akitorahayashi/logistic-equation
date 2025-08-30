@@ -97,6 +97,22 @@ class FuturePredictorService:
 
         return t_forecast, v_forecast
 
+    def create_prediction_dataframe(
+        self, forecast_time_array: np.ndarray, forecast_value_array: np.ndarray
+    ) -> pd.DataFrame:
+        """
+        予測結果から年ごとのDataFrameを作成する。
+        時間配列が浮動小数点数の場合、整数に近い値のみを抽出する。
+        """
+        mask = np.isclose(np.mod(forecast_time_array, 1), 0.0, atol=1e-9)
+        idx = np.nonzero(mask)[0]
+
+        df_year = forecast_time_array[idx] + self.prediction_settings.start_year
+        df_value = forecast_value_array[idx]
+
+        forecast_df = pd.DataFrame({"year": df_year, "value": df_value})
+        return forecast_df
+
     def save_prediction_to_excel(
         self,
         t_forecast: np.ndarray,
