@@ -1,26 +1,26 @@
-# ロジスティック方程式 分析ツール (Streamlit版)
+# Logistic Equation Analysis Tool (Streamlit Version)
 
-## 概要
+## Overview
 
-このプロジェクトは、時系列データをロジスティック方程式に当てはめて分析し、将来予測を行うためのインタラクティブなWebアプリケーションです。人口の推移や製品の普及率など、S字型の成長を示す現象のモデリングに利用できます。
+This project is an interactive web application for analyzing time-series data by fitting it to a logistic equation and making future predictions. It is useful for modeling S-shaped growth phenomena, such as population trends or product adoption rates.
 
-ユーザーはWeb UIを通じて分析したいExcelファイルをアップロードし、パラメータの探索範囲を対話的に設定し、分析結果（グラフ、予測データ）をブラウザ上で直接確認することができます。
+Users can upload an Excel file for analysis via the web UI, interactively set the parameter search range, and view the analysis results (graphs, prediction data) directly in the browser.
 
-## 主な機能
+## Key Features
 
-- **インタラクティブなUI**: [Streamlit](https://streamlit.io/) を用いた直感的で使いやすいWebインターフェース。
-- **ファイルアップロード**: ブラウザから直接、分析対象のExcelファイルをアップロードできます。
-- **動的なパラメータ設定**: 環境収容力 `K` や成長率 `γ` の探索範囲をUI上のスライダーや数値入力でリアルタイムに設定可能です。
-- **リアルタイム結果表示**: 分析結果はタブ形式で整理して表示されます。
-    - **フィッティング結果**: 最適化されたパラメータと、実データへの適合度を示すグラフを確認できます。
-    - **将来予測**: モデルに基づいた将来予測グラフを閲覧できます。
-    - **データダウンロード**: 予測結果のデータをExcelファイルとしてダウンロードできます。
-- **高精度な数値解析**: 4次ルンゲ・クッタ法を用いてロジスティック微分方程式を解き、精度の高いモデルを構築します（コアロジックは旧版から変更ありません）。
+- **Interactive UI**: An intuitive and easy-to-use web interface built with [Streamlit](https://streamlit.io/).
+- **File Upload**: Directly upload Excel files for analysis from your browser.
+- **Dynamic Parameter Settings**: Set the search ranges for carrying capacity `K` and growth rate `γ` in real-time using UI sliders and number inputs.
+- **Real-time Result Display**: Analysis results are displayed in organized tabs:
+    - **Fitting Result**: Check the optimized parameters and a graph showing the fit to the actual data.
+    - **Forecast**: View the future prediction graph based on the model.
+    - **Download Data**: Download the prediction data as an Excel file.
+- **High-Precision Numerical Analysis**: Solves the logistic differential equation using the 4th-order Runge-Kutta method to build a highly accurate model (the core logic is unchanged from the original version).
 
-## 動作要件
+## Requirements
 
 - Python: `==3.12.11`
-- 主要なライブラリ:
+- Key Libraries:
   - `streamlit`
   - `numpy`
   - `pandas`
@@ -28,16 +28,16 @@
   - `matplotlib`
   - `scikit-learn`
 
-## 依存関係
+## Dependencies
 
-本プロジェクトは[Poetry](https://python-poetry.org/)によるライブラリの依存関係の管理を前提としています。
+This project uses [Poetry](https://python-poetry.org/) to manage dependencies.
 
-以下のコマンドで、必要なライブラリをインストールします。
+Install the required libraries with the following command:
 ```bash
 poetry install
 ```
 
-## ディレクトリ構成
+## Directory Structure
 
 ```
 .
@@ -47,39 +47,44 @@ poetry install
 │   │   └── results_display.py
 │   ├── config/
 │   ├── model/
+│   └── main.py  <-- Application entry point
 ├── tests/
-├── app.py  <-- アプリケーションのエントリーポイント
+├── Makefile
 ├── pyproject.toml
 └── README.md
 ```
 
-## 使い方
+## Usage
 
-### 1. アプリケーションの起動
+### 1. Launching the Application
 
-プロジェクトのルートディレクトリで以下のコマンドを実行すると、Webアプリケーションが起動し、ブラウザで自動的に開きます。
+Run the following command in the project root directory to launch the web application. It will automatically open in your browser.
 
 ```bash
-streamlit run app.py
+streamlit run src/main.py
 ```
-または、Poetryのスクリプト経由で実行することも可能です。
+Alternatively, you can use the Poetry script:
 ```bash
 poetry run run
 ```
+Or the Makefile command:
+```bash
+make run
+```
 
-### 2. Webアプリケーションの操作
+### 2. Using the Web Application
 
-アプリケーションが起動したら、画面左のサイドバーに表示される指示に従ってください。
+Once the application is running, follow the instructions in the left-hand sidebar:
 
-1.  **データファイルのアップロード**:
-    - 分析したい時系列データを含むExcelファイル（`.xlsx`）をアップロードします。
-    - Excelの1列目を時間（例：年）、2列目を観測値（例：人口）としてください。ヘッダーは不要です。
-2.  **パラメータ探索範囲の設定**:
-    - **環境収容力 (K)** と **成長率 (γ)** の探索範囲とステップ（刻み幅）を指定します。
-    - Kの値が大きい場合は、入力しやすいように単位（万、億、兆）を選択できます。
-3.  **予測期間の設定**:
-    - データの開始年と、何年先まで予測したいかを設定します。
-4.  **分析の実行**:
-    - 「分析実行」ボタンをクリックすると、パラメータ探索と将来予測が始まります。
+1.  **Upload Data File**:
+    - Upload an Excel file (`.xlsx`) containing the time-series data you want to analyze.
+    - The first column in the Excel sheet should be for time (e.g., year), and the second column for the observed value (e.g., population). No headers are needed.
+2.  **Set Parameter Search Range**:
+    - Specify the search range and step size for **Carrying Capacity (K)** and **Growth Rate (γ)**.
+    - For large K values, you can select units (e.g., thousands, millions, billions) for easier input.
+3.  **Set Forecast Period**:
+    - Set the start year of the data and how many years into the future you want to predict.
+4.  **Run Analysis**:
+    - Click the "Run Analysis" button to start the parameter search and future forecast.
 
-分析が完了すると、メインパネルに結果（最適パラメータ、グラフ、予測データ）が表示されます。
+Once the analysis is complete, the results (optimal parameters, graphs, and prediction data) will be displayed in the main panel.

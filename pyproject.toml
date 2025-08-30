@@ -27,10 +27,14 @@ mypy = "^1.17.1"
 types-openpyxl = "^3.1.5.20250602"
 pandas-stubs = "^2.2.2"
 types-tqdm = "^4.67.0.20250516"
+pytest = "^8.4.0"
+requests = "^2.32.3"
+black = "^24.4.2"
+ruff = "^0.5.5"
 
 [tool.poetry.scripts]
 typecheck = "mypy ."
-run = "streamlit run app.py"
+run = "streamlit run src/main.py"
 
 [tool.mypy]
 python_version = "3.12"

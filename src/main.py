@@ -4,11 +4,6 @@ import numpy as np
 from typing import Dict, Any, Tuple, Optional
 
 # --- アプリケーションのコアロジックとUIコンポーネントのインポート ---
-# パス設定: Pythonがsrcディレクトリを認識できるようにする
-import sys
-import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'src')))
-
 from components.sidebar import render_sidebar
 from components.results_display import render_results
 from config.model_parameters import ModelParameters
