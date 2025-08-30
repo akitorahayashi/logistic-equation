@@ -1,112 +1,106 @@
-## 概要
+# Logistic Equation Analysis Tool (Streamlit Version)
 
-このプロジェクトは、時系列データをロジスティック方程式に当てはめて分析し、将来予測を行うためのPythonツールです。人口の推移や製品の普及率など、S字型の成長を示す現象のモデリングに利用できます。
+## Overview
 
-Excelファイルからデータを読み込み、最適なパラメータを自動で探索してモデルを構築し、結果をグラフとして可視化します。
+This project is an interactive web application for analyzing time-series data by fitting it to a logistic equation and making future predictions. It is useful for modeling S-shaped growth phenomena, such as population trends or product adoption rates.
 
-## 主な機能
+Users can upload an Excel file for analysis via the web UI, interactively set the parameter search range, and view the analysis results (graphs, prediction data) directly in the browser.
 
-- **Excelからのデータ抽出**: `input`ディレクトリ内のExcelファイルから時系列データを自動で読み込みます。
-- **パラメータ自動探索**: 残差平方和（SSE）が最小となるロジスティック方程式のパラメータ（環境収容力 `K`、成長率 `γ`）を探索します。
-- **高精度な数値解析**: 4次ルンゲ・クッタ法を用いてロジスティック微分方程式を解き、精度の高いモデルを構築します。
-- **結果の可視化**: 元データとフィッティングした曲線、および将来予測を`matplotlib`で描画し、画像ファイルとして出力します。
-- **進捗表示**: コンソールに分析の進捗状況を分かりやすく表示します。
+## Key Features
 
-## 動作要件
+- **Interactive UI**: An intuitive and easy-to-use web interface built with [Streamlit](https://streamlit.io/).
+- **File Upload**: Directly upload Excel files for analysis from your browser.
+- **Dynamic Parameter Settings**: Set the search ranges for carrying capacity `K` and growth rate `γ` in real-time using UI sliders and number inputs.
+- **Real-time Result Display**: Analysis results are displayed in organized tabs:
+    - **Fitting Result**: Check the optimized parameters and a graph showing the fit to the actual data.
+    - **Forecast**: View the future prediction graph based on the model.
+    - **Download Data**: Download the prediction data as an Excel file.
+- **High-Precision Numerical Analysis**: Solves the logistic differential equation using the 4th-order Runge-Kutta method to build a highly accurate model (the core logic is unchanged from the original version).
 
-- Python: `==3.12.4`
-- Library:
+## Requirements
+
+- Python: `==3.12.11`
+- Key Libraries:
+  - `streamlit`
   - `numpy`
   - `pandas`
   - `openpyxl`
   - `matplotlib`
   - `scikit-learn`
-  - `yaspin`
 
-## 依存関係
+## Dependencies
 
-本プロジェクトは[Poetry](https://python-poetry.org/)によるライブラリの依存関係の管理を前提としています。
+This project uses [Poetry](https://python-poetry.org/) to manage dependencies.
 
+Install the required libraries with the following command:
 ```bash
 poetry install
 ```
 
-## ディレクトリ構成
+## Directory Structure
 
 ```
 .
-├── config/
-├── input/
-│   └── サンプルデータ.xlsx
-├── model/
-│   ├── data_extractor.py
-│   ├── logistic_equation.py
-│   ├── parameter_fitting.py
-│   ├── predictor.py
-│   └── visualizer.py
-├── output/
-│   ├── fit_result.png
-│   └── forecast_result.png
+├── src/
+│   ├── components/
+│   │   ├── sidebar.py
+│   │   └── results_display.py
+│   ├── config/
+│   │   └── config.py
+│   ├── models/
+│   │   └── logistic_equation.py
+│   ├── schemas/
+│   │   ├── model_parameters_schema.py
+│   │   └── prediction_settings_schema.py
+│   ├── services/
+│   │   ├── data_extractor_service.py
+│   │   ├── parameter_fitting_service.py
+│   │   ├── predictor_service.py
+│   │   └── visualizer_service.py
+│   └── main.py  <-- Application entry point
 ├── tests/
-├── main.py
+│   ├── unit/
+│   │   ├── models/
+│   │   ├── schemas/
+│   │   └── services/
+│   ├── build/
+│   └── e2e/
+├── Makefile
 ├── pyproject.toml
 └── README.md
 ```
 
-## 使い方
+## Usage
 
-### 1. 入力データの準備
+### 1. Launching the Application
 
-1.  `input`ディレクトリに、分析したいデータを含むExcelファイル（`.xlsx`形式）を1つ配置します。
-2.  Excelファイルの1行目には、必ず`time`と`value`というヘッダーを設定してください。
-    - `time`: 時間（年など）を表す数値
-    - `value`: `time`に対応する観測値
-
-サンプルとして`input/サンプルデータ.xlsx`が同梱されています。
-
-### 2. スクリプトの実行
-
-プロジェクトのルートディレクトリで以下のコマンドを実行すると、分析パイプラインが開始されます。
+Run the following command in the project root directory to launch the web application. It will automatically open in your browser.
 
 ```bash
-poetry run python main.py
+streamlit run src/main.py
+```
+Alternatively, you can use the Poetry script:
+```bash
+poetry run run
+```
+Or the Makefile command:
+```bash
+make run
 ```
 
-`main.py`の冒頭部分で、モデルのパラメータ（Kとγの探索範囲など）を調整することができます。詳細は後述の「設定」セクションを参照してください。
+### 2. Using the Web Application
 
-## 設定
+Once the application is running, follow the instructions in the left-hand sidebar:
 
-モデルのパラメータや予測期間は`main.py`スクリプトの冒頭で変更できます。
+1.  **Upload Data File**:
+    - Upload an Excel file (`.xlsx`) containing the time-series data you want to analyze.
+    - The first column should be time. You may provide either a 0-based time index (0,1,2,...) or calendar years (e.g., 1950, 1951, ...). The app automatically normalizes years by subtracting the first year to start from t=0. The second column is the observed value. No headers are needed.
+2.  **Set Parameter Search Range**:
+    - Specify the search range and step size for **Carrying Capacity (K)** and **Growth Rate (γ)**.
+    - For large K values, you can select units (e.g., thousands, millions, billions) for easier input.
+3.  **Set Forecast Period**:
+    - Set the start year of the data and how many years into the future you want to predict.
+4.  **Run Analysis**:
+    - Click the "Run Analysis" button to start the parameter search and future forecast.
 
-```python
-# main.py
-
-def main() -> None:
-    """
-    ロジスティック方程式分析パイプラインを実行するメインスクリプト
-    """
-    # 設定の初期化
-    model_params = ModelParameters(
-        k_min=2000000.0,
-        k_max=3000000.0,
-        k_step=10000.0,
-        gamma_min=0.02,
-        gamma_max=0.04,
-        gamma_step=0.0005
-    )
-    prediction_settings = PredictionSettings(
-        start_year=1950,
-        forecast_end_t=250
-    )
-    # ...
-```
-
-- `ModelParameters`: パラメータ（`K`, `gamma`）の探索範囲とステップ幅を定義します。
-- `PredictionSettings`: 分析の開始年や、将来予測を行う期間の長さを定義します。
-
-## 出力
-
-分析が完了すると、`output`ディレクトリに以下の2つのPNGファイルが生成されます。
-
-- `fit_result.png`: 元のデータ（散布図）と、それに最もフィットするよう計算されたロジスティック曲線（実線）をプロットしたグラフです。
-- `forecast_result.png`: 元のデータと、構築したモデルに基づいて将来の値を予測した結果をプロットしたグラフです。
+Once the analysis is complete, the results (optimal parameters, graphs, and prediction data) will be displayed in the main panel.
