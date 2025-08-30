@@ -78,7 +78,7 @@ Once the application is running, follow the instructions in the left-hand sideba
 
 1.  **Upload Data File**:
     - Upload an Excel file (`.xlsx`) containing the time-series data you want to analyze.
-    - The first column in the Excel sheet should be for time (e.g., year), and the second column for the observed value (e.g., population). No headers are needed.
+    - The first column should be time. You may provide either a 0-based time index (0,1,2,...) or calendar years (e.g., 1950, 1951, ...). The app automatically normalizes years by subtracting the first year to start from t=0. The second column is the observed value. No headers are needed.
 2.  **Set Parameter Search Range**:
     - Specify the search range and step size for **Carrying Capacity (K)** and **Growth Rate (γ)**.
     - For large K values, you can select units (e.g., thousands, millions, billions) for easier input.

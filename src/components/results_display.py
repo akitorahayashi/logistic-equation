@@ -81,7 +81,7 @@ def render_results(results: Dict[str, Any]) -> None:
             # ダウンロードボタン
             excel_data = to_excel(forecast_df)
             original_filename = results.get("excel_filename", "data")
-            download_filename = f"forecast_{original_filename}"
+            download_filename = f"forecast_{original_filename}.xlsx"
 
             st.download_button(
                 label="予測データをExcelとしてダウンロード",

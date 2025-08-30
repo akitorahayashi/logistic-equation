@@ -55,6 +55,10 @@ class FuturePredictor:
 
         v0: float = value_array[0]
         t_start: float = time_array[0]
+        if forecast_end_t <= t_start:
+            raise ValueError(
+                f"予測終了時刻({forecast_end_t})が開始時刻({t_start})以下です。"
+            )
 
         # より細かい時間刻みで予測を実行
         t_forecast, v_forecast = self.equation.solve_runge_kutta(
@@ -110,11 +114,13 @@ class FuturePredictor:
         Returns:
             str: 保存したファイルのパス
         """
-        # 時間が整数のインデックスを抽出
-        indices = np.where(t_forecast % interval == 0)[0]
+        # interval バリデーション
+        if not isinstance(interval, (int, np.integer)) or interval <= 0:
+            raise ValueError(f"interval は正の整数である必要があります: {interval}")
 
-        # 重複を削除
-        unique_indices = np.unique(indices)
+        # 剰余==0 は浮動小数点誤差で失敗しやすいので isclose を使用
+        mask = np.isclose(np.mod(t_forecast, interval), 0.0, atol=1e-9)
+        unique_indices = np.nonzero(mask)[0]
 
         # データを抽出
         time_points = t_forecast[unique_indices]
@@ -122,6 +128,10 @@ class FuturePredictor:
 
         df = pd.DataFrame({"time": time_points, "value": value_points})
 
-        output_path = os.path.join(config.OUTPUT_DIR, filename)
+        # 拡張子の保証
+        safe_name = filename if filename.lower().endswith(".xlsx") else f"{filename}.xlsx"
+        # ディレクトリ作成（存在しない場合）
+        os.makedirs(config.OUTPUT_DIR, exist_ok=True)
+        output_path = os.path.join(config.OUTPUT_DIR, safe_name)
         df.to_excel(output_path, index=False, engine="openpyxl")
         return output_path

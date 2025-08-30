@@ -44,11 +44,11 @@ class DataExtractor:
             df: pd.DataFrame = pd.read_excel(excel_path, header=0, engine="openpyxl")
 
             # 列名の確認
-            expected_columns = ["time", "value"]
-            if list(df.columns[:2]) != expected_columns:
-                raise ValueError(
-                    f"1行目は 'time', 'value' という列名である必要があります。現在: {list(df.columns[:2])}"
-                )
+            required = {"time", "value"}
+            if not required.issubset(set(df.columns)):
+                raise ValueError(f"列名に 'time', 'value' が必要です。現在: {list(df.columns)}")
+            # 以降の処理で順序を固定
+            df = df[["time", "value"]]
 
             # データ型の確認
             if not (is_numeric_dtype(df["time"]) and is_numeric_dtype(df["value"])):

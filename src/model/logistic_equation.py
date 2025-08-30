@@ -45,9 +45,9 @@ class LogisticEquation:
         if self.gamma is None or self.K is None:
             raise ValueError("パラメータ gamma と K を先に設定してください")
 
-        # Kが0に近い場合のオーバーフローを防止
-        if np.isclose(self.K, 0):
-            return 0
+        # Kは正且つ非ゼロである必要がある
+        if not np.isfinite(self.K) or self.K <= 0 or np.isclose(self.K, 0.0):
+            raise ValueError("K は正の有限値である必要があります")
 
         return self.gamma * v * (1 - v / self.K)
 
@@ -72,7 +72,12 @@ class LogisticEquation:
         if self.gamma is None or self.K is None:
             raise ValueError("パラメータ gamma と K を先に設定してください")
 
-        n_steps = int((t_end - t_start) / dt) + 1
+        if dt <= 0:
+            raise ValueError("dt は正である必要があります")
+        if t_end <= t_start:
+            raise ValueError("t_end は t_start より大きい必要があります")
+        total = t_end - t_start
+        n_steps = int(np.ceil(total / dt)) + 1
         t = np.linspace(t_start, t_end, n_steps)
         vs = np.zeros(n_steps)
         vs[0] = v0
