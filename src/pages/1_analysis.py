@@ -96,7 +96,9 @@ def render_sidebar() -> Dict[str, Any]:
 
     # --- 実行ボタン ---
     st.sidebar.header("4. 分析の実行")
-    run_analysis_button = st.sidebar.button("分析実行", disabled=(uploaded_file is None))
+    run_analysis_button = st.sidebar.button(
+        "分析実行", disabled=(uploaded_file is None)
+    )
     settings["run_analysis"] = run_analysis_button
 
     if uploaded_file is None:
